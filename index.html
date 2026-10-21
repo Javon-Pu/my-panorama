@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360° 互動環景賞屋</title>
+    <!-- 引入 Pannellum 輕量環景套件 (不需要繁重的 Three.js) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <style>
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background-color: #111;
+            font-family: sans-serif;
+        }
+        #panorama {
+            width: 100%;
+            height: 100%;
+        }
+        .title-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="title-bar">
+        <h2>侘寂極簡美學宅</h2>
+        <p>滑鼠拖曳旋轉 ｜ 滾輪縮放</p>
+    </div>
+
+    <!-- 環景容器 -->
+    <div id="panorama"></div>
+
+    <script>
+        // 直接讀取同資料夾底下的 pano.jpg
+        pannellum.viewer('panorama', {
+            "type": "equirectangular",
+            "panorama": "pano.jpg",
+            "autoLoad": true,
+            "compass": true,
+            "hfov": 100
+        });
+    </script>
+
+</body>
+</html>

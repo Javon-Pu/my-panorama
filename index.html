@@ -43,12 +43,38 @@
             margin: 0;
             opacity: 0.8;
         }
-        /* 下方控制按鈕列 */
+        /* 右上角房間快速選單（頁籤） */
+        .room-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .room-btn {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        .room-btn:hover, .room-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        /* 下方控制按鈕列（重置視角 + 自動旋轉） */
         .controls {
             position: absolute;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
             z-index: 10;
         }
         .btn {
@@ -77,12 +103,20 @@
         <p>點擊熱點切換房間 ｜ 滾輪縮放視角</p>
     </div>
 
+    <!-- 右上角房間快速選擇頁籤 -->
+    <div class="room-menu">
+        <button class="room-btn active" onclick="switchScene('entrance')">1. 玄關</button>
+        <button class="room-btn" onclick="switchScene('livingroom')">2. 客廳</button>
+        <button class="room-btn" onclick="switchScene('bedroom')">3. 臥室</button>
+    </div>
+
     <!-- 環景畫面容器 -->
     <div id="panorama"></div>
 
-    <!-- 重置視角按鈕 -->
+    <!-- 下方控制按鈕列 -->
     <div class="controls">
         <button class="btn" id="btn-reset">重置目前視角</button>
+        <button class="btn" id="btn-auto-rotate">自動旋轉：關</button>
     </div>
 
     <script>
@@ -109,17 +143,17 @@
                             "text": "前往客廳",
                             "sceneId": "livingroom"
                         },
-                          {
+                        {
                             "pitch": -5,
                             "yaw": -100,
                             "type": "scene",
                             "text": "前往臥室",
                             "sceneId": "bedroom"
-                        },
+                        }
                     ]
                 },
 
-                // 2. 客廳場景 (pano-02.jpg) - 根據您的截圖方位對應
+                // 2. 客廳場景 (pano-02.jpg)
                 "livingroom": {
                     "title": "客廳",
                     "type": "equirectangular",
@@ -161,16 +195,46 @@
                             "type": "scene",
                             "text": "返回玄關",
                             "sceneId": "entrance"
-                        }                        
+                        }
                     ]
                 }
             }
         });
 
+        // 頁籤切換場景函數
+        function switchScene(sceneId) {
+            viewer.loadScene(sceneId);
+        }
+
+        // 監聽場景變換，自動更新右上角頁籤的高亮狀態
+        viewer.on('scenechange', function(sceneId) {
+            const buttons = document.querySelectorAll('.room-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (sceneId === 'entrance') buttons[0].classList.add('active');
+            if (sceneId === 'livingroom') buttons[1].classList.add('active');
+            if (sceneId === 'bedroom') buttons[2].classList.add('active');
+        });
+
         // 綁定「重置視角」按鈕功能
         document.getElementById('btn-reset').addEventListener('click', function() {
-            viewer.setHfov(100, 1000); // 回復預設縮放 (動畫 1 秒)
-            viewer.setPitch(0, 1000);  // 垂直視角歸零
+            viewer.setHfov(100, 1000); 
+            viewer.setPitch(0, 1000);  
+        });
+
+        // 綁定「自動旋轉」按鈕開關
+        let isRotating = false;
+        const rotateBtn = document.getElementById('btn-auto-rotate');
+        rotateBtn.addEventListener('click', function() {
+            isRotating = !isRotating;
+            if (isRotating) {
+                viewer.startAutoRotate(2); // 設定每秒旋轉 2 度
+                rotateBtn.textContent = "自動旋轉：開";
+                rotateBtn.style.background = "rgba(255, 255, 255, 0.4)";
+            } else {
+                viewer.stopAutoRotate();
+                rotateBtn.textContent = "自動旋轉：關";
+                rotateBtn.style.background = "rgba(255, 255, 255, 0.2)";
+            }
         });
     </script>
 

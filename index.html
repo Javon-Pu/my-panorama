@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>360° 互動環景賞屋</title>
-    <!-- 引入 Pannellum 輕量環景套件 (不需要繁重的 Three.js) -->
+    <title>360° 空間環景漫遊</title>
+    <!-- 引入 Pannellum 樣式與核心 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <style>
@@ -13,43 +13,164 @@
             height: 100%;
             margin: 0;
             background-color: #111;
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         #panorama {
             width: 100%;
             height: 100%;
         }
+        /* 左上角標題卡片 */
         .title-bar {
             position: absolute;
             top: 20px;
             left: 20px;
             color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 12px 20px;
+            border-radius: 10px;
             z-index: 10;
             pointer-events: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .title-bar h2 {
+            font-size: 1.1rem;
+            margin: 0 0 4px 0;
+            font-weight: 500;
+        }
+        .title-bar p {
+            font-size: 0.8rem;
+            margin: 0;
+            opacity: 0.8;
+        }
+        /* 下方控制按鈕列 */
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
 
+    <!-- 空間標題提示 -->
     <div class="title-bar">
-        <h2>侘寂極簡美學宅</h2>
-        <p>滑鼠拖曳旋轉 ｜ 滾輪縮放</p>
+        <h2>室內空間環景漫遊</h2>
+        <p>點擊熱點切換房間 ｜ 滾輪縮放視角</p>
     </div>
 
-    <!-- 環景容器 -->
+    <!-- 環景畫面容器 -->
     <div id="panorama"></div>
 
+    <!-- 重置視角按鈕 -->
+    <div class="controls">
+        <button class="btn" id="btn-reset">重置目前視角</button>
+    </div>
+
     <script>
-        // 直接讀取同資料夾底下的 pano.jpg
-        pannellum.viewer('panorama', {
-            "type": "equirectangular",
-            "panorama": "pano.jpg",
-            "autoLoad": true,
-            "compass": true,
-            "hfov": 100
+        // 初始化 Pannellum 環景器
+        const viewer = pannellum.viewer('panorama', {
+            "default": {
+                "firstScene": "entrance",
+                "author": "Interior Design",
+                "autoLoad": true,
+                "hfov": 100 // 預設視角廣度
+            },
+
+            "scenes": {
+                // 1. 玄關場景 (pano-01.jpg)
+                "entrance": {
+                    "title": "玄關",
+                    "type": "equirectangular",
+                    "panorama": "pano-01.jpg",
+                    "hotSpots": [
+                        {
+                            "pitch": -5,
+                            "yaw": -180,
+                            "type": "scene",
+                            "text": "前往客廳",
+                            "sceneId": "livingroom"
+                        },
+                          {
+                            "pitch": -5,
+                            "yaw": -100,
+                            "type": "scene",
+                            "text": "前往臥室",
+                            "sceneId": "bedroom"
+                        },
+                    ]
+                },
+
+                // 2. 客廳場景 (pano-02.jpg) - 根據您的截圖方位對應
+                "livingroom": {
+                    "title": "客廳",
+                    "type": "equirectangular",
+                    "panorama": "pano-02.jpg",
+                    "hotSpots": [
+                        {
+                            "pitch": -5,
+                            "yaw": 0,
+                            "type": "scene",
+                            "text": "返回玄關",
+                            "sceneId": "entrance"
+                        },
+                        {
+                            "pitch": -5,
+                            "yaw": -90,
+                            "type": "scene",
+                            "text": "前往臥室",
+                            "sceneId": "bedroom"
+                        }
+                    ]
+                },
+
+                // 3. 臥室場景 (pano-03.jpg)
+                "bedroom": {
+                    "title": "臥室",
+                    "type": "equirectangular",
+                    "panorama": "pano-03.jpg",
+                    "hotSpots": [
+                        {
+                            "pitch": -5,
+                            "yaw": 30,
+                            "type": "scene",
+                            "text": "返回客廳",
+                            "sceneId": "livingroom"
+                        },
+                        {
+                            "pitch": -5,
+                            "yaw": -55,
+                            "type": "scene",
+                            "text": "返回玄關",
+                            "sceneId": "entrance"
+                        }                        
+                    ]
+                }
+            }
+        });
+
+        // 綁定「重置視角」按鈕功能
+        document.getElementById('btn-reset').addEventListener('click', function() {
+            viewer.setHfov(100, 1000); // 回復預設縮放 (動畫 1 秒)
+            viewer.setPitch(0, 1000);  // 垂直視角歸零
         });
     </script>
 

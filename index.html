@@ -160,8 +160,8 @@
     <div class="room-menu">
         <button class="room-btn active" onclick="switchScene('entrance')">1. 玄關</button>
         <button class="room-btn" onclick="switchScene('livingroom')">2. 客廳</button>
-        <button class="room-btn" onclick="switchScene('bedroom')">3. 臥室</button>
-        <button class="room-btn" onclick="switchScene('opendoor')">4. 開門視角</button>
+        <button class="room-btn" onclick="switchScene('livingroom-back')">3. 客廳後</button>
+        <button class="room-btn" onclick="switchScene('bedroom')">4. 臥室</button>
     </div>
 
     <!-- 環景畫面容器 -->
@@ -250,9 +250,16 @@
                             "pitch": -5,
                             "yaw": -90,
                             "type": "scene",
+                            "text": "前往客廳後",
+                            "sceneId": "livingroom-back"
+                        },
+                        {
+                            "pitch": -5,
+                            "yaw": -80,
+                            "type": "scene",
                             "text": "前往臥室",
                             "sceneId": "bedroom"
-                        },
+                        },                        
                         {
                             "pitch": 0,
                             "yaw": 45,
@@ -265,7 +272,37 @@
                     ]
                 },
 
-                // 3. 臥室場景 (支援 bed-01, bed-02, bed-03 三張圖輪播)
+                // 3. 客廳後場景 (使用您目前客廳或延伸的圖片，此處暫對應 pano-02.jpg，可依需求改為對應的圖檔)
+                "livingroom-back": {
+                    "title": "客廳後",
+                    "type": "equirectangular",
+                    "panorama": "pano-05.jpg", 
+                    "hotSpots": [
+                        {
+                            "pitch": -5,
+                            "yaw": 0,
+                            "type": "scene",
+                            "text": "返回客廳前",
+                            "sceneId": "livingroom"
+                        },
+                        {
+                            "pitch": -5,
+                            "yaw": -60,
+                            "type": "scene",
+                            "text": "返回玄關",
+                            "sceneId": "entrance"
+                        },                        
+                        {
+                            "pitch": -5,
+                            "yaw": -150,
+                            "type": "scene",
+                            "text": "前往臥室",
+                            "sceneId": "bedroom"
+                        }
+                    ]
+                },
+
+                // 4. 臥室場景
                 "bedroom": {
                     "title": "臥室",
                     "type": "equirectangular",
@@ -275,8 +312,8 @@
                             "pitch": -5,
                             "yaw": 30,
                             "type": "scene",
-                            "text": "返回客廳",
-                            "sceneId": "livingroom"
+                            "text": "返回客廳後",
+                            "sceneId": "livingroom-back"
                         },
                         {
                             "pitch": -5,
@@ -297,7 +334,7 @@
                     ]
                 },
 
-                // 4. 門開啟視角場景
+                // 5. 門開啟視角場景 (無頁籤)
                 "opendoor": {
                     "title": "門開啟視角",
                     "type": "equirectangular",
@@ -330,9 +367,9 @@
         function changeSlide(direction) {
             currentIndex += direction;
             if (currentIndex >= currentImages.length) {
-                currentIndex = 0; // 循環到第一張
+                currentIndex = 0; 
             } else if (currentIndex < 0) {
-                currentIndex = currentImages.length - 1; // 循環到最後一張
+                currentIndex = currentImages.length - 1; 
             }
             updateModalImage();
         }
@@ -357,8 +394,8 @@
             buttons.forEach(btn => btn.classList.remove('active'));
             if (sceneId === 'entrance') buttons[0].classList.add('active');
             if (sceneId === 'livingroom') buttons[1].classList.add('active');
-            if (sceneId === 'bedroom') buttons[2].classList.add('active');
-            if (sceneId === 'opendoor') buttons[3].classList.add('active');
+            if (sceneId === 'livingroom-back') buttons[2].classList.add('active');
+            if (sceneId === 'bedroom') buttons[3].classList.add('active');
         });
 
         // 綁定「重置視角」按鈕功能

@@ -94,13 +94,65 @@
             background: rgba(255, 255, 255, 0.35);
             transform: translateY(-2px);
         }
+        /* 圖片彈跳視窗樣式 (含左右切換箭頭) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 75%;
+            max-height: 80%;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.6);
+        }
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 101;
+        }
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            font-size: 30px;
+            padding: 15px 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.5s;
+            z-index: 101;
+        }
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .prev-arrow {
+            left: 30px;
+        }
+        .next-arrow {
+            right: 30px;
+        }
     </style>
 </head>
 <body>
 
     <!-- 空間標題提示 -->
     <div class="title-bar">
-        <h2>室內空間環景漫遊</h2>
+        <h2>吳宅_室內室內設計案</h2>
         <p>點擊熱點切換房間 ｜ 滾輪縮放視角</p>
     </div>
 
@@ -121,6 +173,14 @@
         <button class="btn" id="btn-auto-rotate">自動旋轉：關</button>
     </div>
 
+    <!-- 圖片彈跳視窗 (支援多張圖片輪播) -->
+    <div id="imageModal" class="modal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <button class="nav-arrow prev-arrow" onclick="changeSlide(-1)">&#10094;</button>
+        <img class="modal-content" id="modalImg" src="">
+        <button class="nav-arrow next-arrow" onclick="changeSlide(1)">&#10095;</button>
+    </div>
+
     <script>
         // 初始化 Pannellum 環景器
         const viewer = pannellum.viewer('panorama', {
@@ -128,7 +188,7 @@
                 "firstScene": "entrance",
                 "author": "Interior Design",
                 "autoLoad": true,
-                "hfov": 100
+                "hfov": 120
             },
 
             "scenes": {
@@ -143,22 +203,32 @@
                             "yaw": -180,
                             "type": "scene",
                             "text": "前往客廳",
-                            "sceneId": "livingroom"
+                            "sceneId": "livingroom",
+                            "targetYaw": 330,    
+                            "targetPitch": 0         
                         },
                         {
                             "pitch": -5,
-                            "yaw": -100,
+                            "yaw": -120,
                             "type": "scene",
                             "text": "前往臥室",
                             "sceneId": "bedroom"
                         },
-                        // 在玄關加入「點我開啟門」的熱點（您可以根據實際位置微調 yaw 與 pitch）
                         {
                             "pitch": -5,
-                            "yaw": -10,
+                            "yaw": -45,
                             "type": "scene",
                             "text": "點我開啟門",
                             "sceneId": "opendoor"
+                        },
+                        {
+                            "pitch": -25,
+                            "yaw": -90,
+                            "type": "info",
+                            "text": "查看進門視角 (liv-02)",
+                            "clickHandlerFunc": function() {
+                                openGallery(['liv-02.jpg']);
+                            }
                         }
                     ]
                 },
@@ -182,11 +252,20 @@
                             "type": "scene",
                             "text": "前往臥室",
                             "sceneId": "bedroom"
+                        },
+                        {
+                            "pitch": 0,
+                            "yaw": 45,
+                            "type": "info",
+                            "text": "查看客廳細節 (liv-01)",
+                            "clickHandlerFunc": function() {
+                                openGallery(['liv-01.jpg']);
+                            }
                         }
                     ]
                 },
 
-                // 3. 臥室場景
+                // 3. 臥室場景 (支援 bed-01, bed-02, bed-03 三張圖輪播)
                 "bedroom": {
                     "title": "臥室",
                     "type": "equirectangular",
@@ -205,6 +284,15 @@
                             "type": "scene",
                             "text": "返回玄關",
                             "sceneId": "entrance"
+                        },
+                        {
+                            "pitch": -5,
+                            "yaw": 0,
+                            "type": "info",
+                            "text": "查看臥室衣櫃細節 (多張)",
+                            "clickHandlerFunc": function() {
+                                openGallery(['bed-01.jpg', 'bed-02.jpg', 'bed-03.jpg']);
+                            }
                         }
                     ]
                 },
@@ -217,15 +305,46 @@
                     "hotSpots": [
                         {
                             "pitch": -5,
-                            "yaw": 180,
+                            "yaw": -45,
                             "type": "scene",
-                            "text": "返回玄關",
+                            "text": "返回關門視角",
                             "sceneId": "entrance"
                         }
                     ]
                 }
             }
         });
+
+        // 圖片輪播相關變數
+        let currentImages = [];
+        let currentIndex = 0;
+
+        function openGallery(imgArray) {
+            currentImages = imgArray;
+            currentIndex = 0;
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'flex';
+            updateModalImage();
+        }
+
+        function changeSlide(direction) {
+            currentIndex += direction;
+            if (currentIndex >= currentImages.length) {
+                currentIndex = 0; // 循環到第一張
+            } else if (currentIndex < 0) {
+                currentIndex = currentImages.length - 1; // 循環到最後一張
+            }
+            updateModalImage();
+        }
+
+        function updateModalImage() {
+            const modalImg = document.getElementById('modalImg');
+            modalImg.src = currentImages[currentIndex];
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
 
         // 頁籤切換場景函數
         function switchScene(sceneId) {
@@ -244,7 +363,7 @@
 
         // 綁定「重置視角」按鈕功能
         document.getElementById('btn-reset').addEventListener('click', function() {
-            viewer.setHfov(100, 1000); 
+            viewer.setHfov(120, 1000); 
             viewer.setPitch(0, 1000);  
         });
 

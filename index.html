@@ -43,7 +43,7 @@
             margin: 0;
             opacity: 0.8;
         }
-        /* 右上角房間快速選單（頁籤） */
+        /* 右上角房間快速選擇頁籤 */
         .room-menu {
             position: absolute;
             top: 20px;
@@ -51,6 +51,7 @@
             display: flex;
             gap: 8px;
             z-index: 10;
+            flex-wrap: wrap;
         }
         .room-btn {
             background: rgba(0, 0, 0, 0.6);
@@ -67,7 +68,7 @@
             background: rgba(255, 255, 255, 0.3);
             border-color: rgba(255, 255, 255, 0.8);
         }
-        /* 下方控制按鈕列（重置視角 + 自動旋轉） */
+        /* 下方控制按鈕列 */
         .controls {
             position: absolute;
             bottom: 30px;
@@ -108,6 +109,7 @@
         <button class="room-btn active" onclick="switchScene('entrance')">1. 玄關</button>
         <button class="room-btn" onclick="switchScene('livingroom')">2. 客廳</button>
         <button class="room-btn" onclick="switchScene('bedroom')">3. 臥室</button>
+        <button class="room-btn" onclick="switchScene('opendoor')">4. 開門視角</button>
     </div>
 
     <!-- 環景畫面容器 -->
@@ -126,11 +128,11 @@
                 "firstScene": "entrance",
                 "author": "Interior Design",
                 "autoLoad": true,
-                "hfov": 100 // 預設視角廣度
+                "hfov": 100
             },
 
             "scenes": {
-                // 1. 玄關場景 (pano-01.jpg)
+                // 1. 玄關場景
                 "entrance": {
                     "title": "玄關",
                     "type": "equirectangular",
@@ -149,11 +151,19 @@
                             "type": "scene",
                             "text": "前往臥室",
                             "sceneId": "bedroom"
+                        },
+                        // 在玄關加入「點我開啟門」的熱點（您可以根據實際位置微調 yaw 與 pitch）
+                        {
+                            "pitch": -5,
+                            "yaw": 20,
+                            "type": "scene",
+                            "text": "點我開啟門",
+                            "sceneId": "opendoor"
                         }
                     ]
                 },
 
-                // 2. 客廳場景 (pano-02.jpg)
+                // 2. 客廳場景
                 "livingroom": {
                     "title": "客廳",
                     "type": "equirectangular",
@@ -176,7 +186,7 @@
                     ]
                 },
 
-                // 3. 臥室場景 (pano-03.jpg)
+                // 3. 臥室場景
                 "bedroom": {
                     "title": "臥室",
                     "type": "equirectangular",
@@ -192,6 +202,22 @@
                         {
                             "pitch": -5,
                             "yaw": -55,
+                            "type": "scene",
+                            "text": "返回玄關",
+                            "sceneId": "entrance"
+                        }
+                    ]
+                },
+
+                // 4. 門開啟視角場景
+                "opendoor": {
+                    "title": "門開啟視角",
+                    "type": "equirectangular",
+                    "panorama": "pano-04.jpg",
+                    "hotSpots": [
+                        {
+                            "pitch": -5,
+                            "yaw": 180,
                             "type": "scene",
                             "text": "返回玄關",
                             "sceneId": "entrance"
@@ -213,6 +239,7 @@
             if (sceneId === 'entrance') buttons[0].classList.add('active');
             if (sceneId === 'livingroom') buttons[1].classList.add('active');
             if (sceneId === 'bedroom') buttons[2].classList.add('active');
+            if (sceneId === 'opendoor') buttons[3].classList.add('active');
         });
 
         // 綁定「重置視角」按鈕功能
@@ -227,7 +254,7 @@
         rotateBtn.addEventListener('click', function() {
             isRotating = !isRotating;
             if (isRotating) {
-                viewer.startAutoRotate(2); // 設定每秒旋轉 2 度
+                viewer.startAutoRotate(2);
                 rotateBtn.textContent = "自動旋轉：開";
                 rotateBtn.style.background = "rgba(255, 255, 255, 0.4)";
             } else {
